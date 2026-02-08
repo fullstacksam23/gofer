@@ -1,4 +1,4 @@
-# Go AI Agent CLI
+# Gofer
 
 A lightweight, autonomous CLI agent written in Go. This tool leverages LLMs (via OpenRouter/OpenAI-compatible APIs) to perform system tasks. It allows the AI to **read files**, **write files**, and **execute shell commands** to fulfill your prompts.
 
@@ -29,21 +29,25 @@ A lightweight, autonomous CLI agent written in Go. This tool leverages LLMs (via
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/fullstacksam23/codecrafters-claude-cli-clone.git
-   cd codecrafters-claude-cli-clone\app
+   git clone https://github.com/fullstacksam23/gofer.git
+   cd gofer
    ```
-2. Install dependencies:
+2. **Install dependencies:**
+
    ```bash
    go mod tidy
+
    ```
 
-## ⚙️ Configuration
+3. **Create .env:** This tool uses Go's embed feature to bake your configuration into the binary, allowing you to run it from any directory. Create a .env file in the root of the project:
 
-1. Create a .env file in the root of the project:
    ```bash
    touch .env
    ```
-2. Add your API key and configuration:
+
+4. **Add your API key**:
+
+   .env
 
    ```bash
    # Required
@@ -54,6 +58,21 @@ A lightweight, autonomous CLI agent written in Go. This tool leverages LLMs (via
    ```
 
    Note: The model is currently hardcoded to anthropic/claude-haiku-4.5 in main.go. You can modify the Model field in the code to use other models.
+
+5. **Compile and install the binary:**
+   ```bash
+   go install .
+   ```
+
+## 🏃 Usage
+
+Once installed, you can run the tool from any terminal window in any folder.
+
+**Example**
+
+```bash
+gofer -p "Add a comment above the readFileTool function in main.go explaing what is does"
+```
 
 ## 🧩 How it Works
 

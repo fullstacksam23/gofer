@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -36,8 +37,20 @@ type bashArgs struct {
 // 	fmt.Println(test)
 // }
 
+//go:embed .env
+var envFile string
+
 func main() {
-	_ = godotenv.Load()
+	myEnv, err := godotenv.Unmarshal(envFile)
+	if err == nil {
+		for key, value := range myEnv {
+			os.Setenv(key, value)
+		}
+	}
+
+	apiKey := os.Getenv("OPENROUTER_API_KEY")
+	baseUrl := os.Getenv("OPENROUTER_BASE_URL")
+
 	var prompt string
 	flag.StringVar(&prompt, "p", "", "Prompt to send to LLM")
 	flag.Parse()
@@ -46,8 +59,6 @@ func main() {
 		panic("Prompt must not be empty")
 	}
 
-	apiKey := os.Getenv("OPENROUTER_API_KEY")
-	baseUrl := os.Getenv("OPENROUTER_BASE_URL")
 	if baseUrl == "" {
 		baseUrl = "https://openrouter.ai/api/v1"
 	}
@@ -68,8 +79,8 @@ func main() {
 	for {
 		resp, err := client.Chat.Completions.New(context.Background(),
 			openai.ChatCompletionNewParams{
-				Model: "openrouter/free", // using this for local testing
-				// Model:    "anthropic/claude-haiku-4.5",
+				// Model: "openrouter/free", // using this for local testing
+				Model:    "anthropic/claude-haiku-4.5",
 				Messages: conversation,
 				Tools: []openai.ChatCompletionToolUnionParam{
 					openai.ChatCompletionFunctionTool(openai.FunctionDefinitionParam{
