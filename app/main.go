@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/joho/godotenv"
@@ -20,6 +22,9 @@ type readArgs struct {
 type writeArgs struct {
 	FilePath string `json:"file_path"`
 	Content  string `json:"content"`
+}
+type bashArgs struct {
+	Command string `json:"command"`
 }
 
 //test readFileTool
@@ -99,6 +104,20 @@ func main() {
 							"required": []string{"file_path", "content"},
 						},
 					}),
+					openai.ChatCompletionFunctionTool(openai.FunctionDefinitionParam{
+						Name:        "Bash",
+						Description: openai.String("Execute a shell command"),
+						Parameters: openai.FunctionParameters{
+							"type": "object",
+							"properties": map[string]any{
+								"command": map[string]any{
+									"type":        "string",
+									"description": "The command to execute",
+								},
+							},
+							"required": []string{"command"},
+						},
+					}),
 				},
 			},
 		)
@@ -164,6 +183,24 @@ func main() {
 								ToolCallID: tc.ID,
 							},
 						})
+					} else if tc.Function.Name == "Bash" {
+						var args bashArgs
+						err := json.Unmarshal([]byte(tc.Function.Arguments), &args)
+						if err != nil {
+							log.Fatal(err)
+						}
+						bashOutput, bashErr := bashTool(args.Command)
+						if bashErr != nil {
+							log.Fatal(bashErr)
+						}
+						conversation = append(conversation, openai.ChatCompletionMessageParamUnion{
+							OfTool: &openai.ChatCompletionToolMessageParam{
+								Content: openai.ChatCompletionToolMessageParamContentUnion{
+									OfString: openai.String(bashOutput),
+								},
+								ToolCallID: tc.ID,
+							},
+						})
 					}
 
 				}
@@ -189,4 +226,21 @@ func writeFileTool(filePath, content string) error {
 		return err
 	}
 	return os.WriteFile(filePath, []byte(content), 0644)
+}
+func bashTool(command string) (string, error) {
+	cmd := exec.Command("sh", "-c", command)
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+
+	output := stdout.String() + stderr.String()
+
+	if err != nil {
+		return output, err
+	}
+
+	return output, nil
 }
