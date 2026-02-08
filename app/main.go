@@ -50,7 +50,8 @@ func main() {
 	client := openai.NewClient(option.WithAPIKey(apiKey), option.WithBaseURL(baseUrl))
 	resp, err := client.Chat.Completions.New(context.Background(),
 		openai.ChatCompletionNewParams{
-			Model: "openrouter/free",
+			// Model: "openrouter/free",
+			Model: "anthropic/claude-haiku-4.5",
 			Messages: []openai.ChatCompletionMessageParamUnion{
 				{
 					OfUser: &openai.ChatCompletionUserMessageParam{
@@ -104,9 +105,10 @@ func main() {
 
 			}
 		}
+	} else {
+		fmt.Print(resp.Choices[0].Message.Content)
 	}
 
-	fmt.Print(resp.Choices[0].Message.Content)
 }
 
 func readFileTool(filePath string) (string, error) {
