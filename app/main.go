@@ -6,8 +6,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
-
 	"os"
+	"path/filepath"
 
 	"github.com/joho/godotenv"
 	"github.com/openai/openai-go/v3"
@@ -17,8 +17,12 @@ import (
 type readArgs struct {
 	FilePath string `json:"file_path"`
 }
+type writeArgs struct {
+	FilePath string `json:"file_path"`
+	Content  string `json:"content"`
+}
 
-//test readFileToo
+//test readFileTool
 // func main() {
 // 	test, err := readFileTool("../test.py")
 // 	if err != nil {
@@ -77,6 +81,24 @@ func main() {
 							"required": []string{"file_path"},
 						},
 					}),
+					openai.ChatCompletionFunctionTool(openai.FunctionDefinitionParam{
+						Name:        "Write",
+						Description: openai.String("Write content to a file"),
+						Parameters: openai.FunctionParameters{
+							"type": "object",
+							"properties": map[string]any{
+								"file_path": map[string]any{
+									"type":        "string",
+									"description": "The path of the file to write to",
+								},
+								"content": map[string]any{
+									"type":        "string",
+									"description": "The content to write to the file",
+								},
+							},
+							"required": []string{"file_path", "content"},
+						},
+					}),
 				},
 			},
 		)
@@ -123,6 +145,25 @@ func main() {
 							},
 						})
 
+					} else if tc.Function.Name == "Write" {
+						var args writeArgs
+						err := json.Unmarshal([]byte(tc.Function.Arguments), &args)
+						if err != nil {
+							log.Fatal(err)
+						}
+						writeErr := writeFileTool(args.FilePath, args.Content)
+						if writeErr != nil {
+							log.Fatal(writeErr)
+						}
+
+						conversation = append(conversation, openai.ChatCompletionMessageParamUnion{
+							OfTool: &openai.ChatCompletionToolMessageParam{
+								Content: openai.ChatCompletionToolMessageParamContentUnion{
+									OfString: openai.String("OK"),
+								},
+								ToolCallID: tc.ID,
+							},
+						})
 					}
 
 				}
@@ -141,4 +182,11 @@ func readFileTool(filePath string) (string, error) {
 	}
 	content := string(data)
 	return content, nil
+}
+func writeFileTool(filePath, content string) error {
+	err := os.MkdirAll(filepath.Dir(filePath), 0755)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filePath, []byte(content), 0644)
 }
