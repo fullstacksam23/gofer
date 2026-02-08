@@ -89,12 +89,18 @@ func main() {
 		}
 
 		msg := resp.Choices[0].Message
+		msgBytes, err := json.Marshal(msg)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var assistantMsg openai.ChatCompletionAssistantMessageParam
+		if err := json.Unmarshal(msgBytes, &assistantMsg); err != nil {
+			log.Fatal(err)
+		}
+
 		conversation = append(conversation, openai.ChatCompletionMessageParamUnion{
-			OfAssistant: &openai.ChatCompletionAssistantMessageParam{
-				Content: openai.ChatCompletionAssistantMessageParamContentUnion{
-					OfString: openai.String(msg.Content),
-				},
-			},
+			OfAssistant: &assistantMsg,
 		})
 
 		if msg.JSON.ToolCalls.Valid() {
