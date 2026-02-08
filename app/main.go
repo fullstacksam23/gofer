@@ -68,8 +68,8 @@ func main() {
 	for {
 		resp, err := client.Chat.Completions.New(context.Background(),
 			openai.ChatCompletionNewParams{
-				// Model: "openrouter/free", // using this for local testing
-				Model:    "anthropic/claude-haiku-4.5",
+				Model: "openrouter/free", // using this for local testing
+				// Model:    "anthropic/claude-haiku-4.5",
 				Messages: conversation,
 				Tools: []openai.ChatCompletionToolUnionParam{
 					openai.ChatCompletionFunctionTool(openai.FunctionDefinitionParam{

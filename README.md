@@ -1,34 +1,65 @@
-[![progress-banner](https://backend.codecrafters.io/progress/claude-code/7fd58427-8f85-40c4-95e8-7b09de0dee82)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# Go AI Agent CLI
 
-This is a starting point for Go solutions to the
-["Build Your own Claude Code" Challenge](https://codecrafters.io/challenges/claude-code).
+A lightweight, autonomous CLI agent written in Go. This tool leverages LLMs (via OpenRouter/OpenAI-compatible APIs) to perform system tasks. It allows the AI to **read files**, **write files**, and **execute shell commands** to fulfill your prompts.
 
-Claude Code is an AI coding assistant that uses Large Language Models (LLMs) to
-understand code and perform actions through tool calls. In this challenge,
-you'll build your own Claude Code from scratch by implementing an LLM-powered
-coding assistant.
+## 🚀 Features
 
-Along the way you'll learn about HTTP RESTful APIs, OpenAI-compatible tool
-calling, agent loop, and how to integrate multiple tools into an AI assistant.
+- **Function Calling:** Implements the OpenAI Tool Use standard to let the LLM decide when to act.
+- **File System Access:**
+  - `Read`: Allows the LLM to inspect file contents.
+  - `Write`: Allows the LLM to create or overwrite files (automatically creates directories).
+- **Shell Execution:**
+  - `Bash`: Gives the LLM access to the system shell to run commands.
+- **OpenRouter Integration:** Pre-configured to use `anthropic/claude-haiku-4.5` via OpenRouter, but compatible with any OpenAI-compliant endpoint.
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+## ⚠️ Security Warning
 
-# Passing the first stage
+**Use with caution.** This tool grants an AI model the ability to execute `bash` commands and modify your file system.
 
-The entry point for your `claude-code` implementation is in `app/main.go`. Study
-and uncomment the relevant code, and submit to pass the first stage:
+- Do not run this with root/sudo privileges.
+- Review the code before running it against sensitive production environments.
+- The AI could theoretically run destructive commands (e.g., `rm -rf`) if prompted or hallucinated.
 
-```sh
-codecrafters submit
-```
+## 🛠️ Prerequisites
 
-# Stage 2 & beyond
+- [Go](https://go.dev/dl/) (1.21 or higher recommended)
+- An API Key from [OpenRouter](https://openrouter.ai/) (or an OpenAI-compatible provider).
 
-Note: This section is for stages 2 and beyond.
+## 📦 Installation
 
-1. Ensure you have `go (1.25)` installed locally.
-2. Run `./your_program.sh` to run your program, which is implemented in
-   `app/main.go`.
-3. Run `codecrafters submit` to submit your solution to CodeCrafters. Test
-   output will be streamed to your terminal.
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/fullstacksam23/codecrafters-claude-cli-clone.git
+   cd codecrafters-claude-cli-clone\app
+   ```
+2. Install dependencies:
+   ```bash
+   go mod tidy
+   ```
+
+## ⚙️ Configuration
+
+1. Create a .env file in the root of the project:
+   ```bash
+   touch .env
+   ```
+2. Add your API key and configuration:
+
+   ```bash
+   # Required
+   OPENROUTER_API_KEY=sk-or-v1-your-key-here
+
+   # Optional (Defaults to OpenRouter)
+   OPENROUTER_BASE_URL=[https://openrouter.ai/api/v1](https://openrouter.ai/api/v1)
+   ```
+
+   Note: The model is currently hardcoded to anthropic/claude-haiku-4.5 in main.go. You can modify the Model field in the code to use other models.
+
+## 🧩 How it Works
+
+The application runs a loop:
+
+1. Sends the user prompt to the LLM.
+2. Checks if the LLM wants to call a tool (Read, Write, Bash).
+3. If yes: Executes the Go function corresponding to the tool, feeds the result back to the LLM, and repeats the loop.
+4. If no: Prints the final text response from the LLM and exits.
