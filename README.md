@@ -71,7 +71,7 @@ Once installed, you can run the tool from any terminal window in any folder.
 **Example**
 
 ```bash
-gofer -p "Add a comment above the readFileTool function in main.go explaining what is does"
+gofer -p "Add a comment above the readFileTool function in main.go explaining what it does"
 ```
 
 ## 🧩 How it Works
