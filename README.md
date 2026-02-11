@@ -54,7 +54,7 @@ A lightweight, autonomous CLI agent written in Go. This tool leverages LLMs (via
    OPENROUTER_API_KEY=sk-or-v1-your-key-here
 
    # Optional (Defaults to OpenRouter)
-   OPENROUTER_BASE_URL=[https://openrouter.ai/api/v1](https://openrouter.ai/api/v1)
+   OPENROUTER_BASE_URL=[https://openrouter.ai/api/v1]
    ```
 
    Note: The model is currently hardcoded to anthropic/claude-haiku-4.5 in main.go. You can modify the Model field in the code to use other models.
